@@ -1,11 +1,10 @@
 /*
   初始化的接口
 */
-import Http from "./http";
-import { RouteInitSDK } from "./Routes";
+import Http from "./Http";
 
-export function reqConfig(initConfigParams: InitConfigParams): Promise<InitConfigRes> {
-  return Http.instance.post({ route: RouteInitSDK, data: initConfigParams });
+export function reqConfigApi(initConfigParams: InitConfigParams): Promise<InitConfigRes> {
+  return Http.ins.post({ route: "/config/v3.1/initSDK", data: initConfigParams });
 }
 
 export interface InitConfigParams {
@@ -16,7 +15,7 @@ export interface InitConfigParams {
   /* 平台来源 0 ios 1 android 2 网页支付 3 webPc */
   source: number;
   /* 网络 0 = wifi 1 = 3g 2 =  其他*/
-  netWork: number;
+  network: number;
   /* 机型,长度最长为50的字符串 */
   model: string;
   /* 操作系统,长度最长为50的字符串 */
@@ -31,13 +30,16 @@ export interface InitConfigParams {
   sdkVersion: string;
   /* 客户端时间 (yyyy-MM-dd HH:mm:ss),长度最长为19的字符串 */
   clientTime: string;
-  /* 0=非首次安装 1=首次安装 */
+  /* 0=非首次安装 1=首次安装  直接传 0 就好*/
   firstInstall: number;
   /* MD5(appId+source+advChannel+appKey) 长度最长为32的字符串 */
   sign: string;
 }
 
-export interface InitConfigRes extends Res {
+export interface InitConfigRes {
+  code: number,
+  error_msg: string
+  imageRootUrl: string,
   /* 消息列表 josn 字符串
   { loginMessageUrl: string; isHasLogin: string;
     isHasPause: string; pauseMessageUrl: string } */
@@ -96,21 +98,18 @@ export interface InitConfigRes extends Res {
       common: {
         // 游戏名,仅 web 端需要,引导添加到桌面
         name: "火影忍者H5",
-        // 游戏的加密的key
-        appKey: "",
         // facebook用于登录和分享的 Id
         fbAppId: "",
         // 卡考用来登录的参数
         kakao: "",
         // 游戏的语言
         language: "",
-        // 服务器 ,新加坡sg 德法 de 越南 vn 用来拿到具体使用的域名
-        region: "",
         // 是否自己打支付点,如果研发打支付点为false 反之为true 只能打官方支付的点,native使用
         isPurchasedMark: false
       },
       // 需要 悬浮球的填
       dom: {
+          +++
         // 是否显示悬浮球
         isShow: true,
         // 悬浮球到顶部的rem值
@@ -139,7 +138,7 @@ export interface InitConfigRes extends Res {
         //  messenger 页 ,联系客服按钮打开的页面
         messenger: ""
       },
-      // 联运需要
+      // 联运需要,后面不要了,从调起支付来取
       uniteQuick: {
         // 支付的code
         code: 118,

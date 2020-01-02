@@ -1,6 +1,5 @@
 import Mark from 'Src/jssdk/0_Old/Mark_old'
 import { Ins } from 'DOM/index'
-import { DOT } from 'Src/jssdk/Base/Constant';
 
 export default class FacebookInstantGames {
 
@@ -41,7 +40,7 @@ export default class FacebookInstantGames {
   * 支付接口
   * @param paymentConfig
   */
-  async Pay(payParams: RG.PayParams): Promise<Res> {
+  async Pay(payParams: RG.PayParams): Promise<ServerRes> {
     var paymentConfig = await RG.jssdk.PaymentConfig(payParams)
     if (paymentConfig.code === 200) {
       var orderingData = paymentConfig.payments.find(payment => {
@@ -60,7 +59,7 @@ export default class FacebookInstantGames {
    * @param data
    * @param purchaseToken
    */
-  serverFinishOrderCompleted(data: Res, purchaseToken: string): Promise<Res> {
+  serverFinishOrderCompleted(data: ServerRes, purchaseToken: string): Promise<ServerRes> {
     return FacebookInstantGames.instance.consumePurchaseAsync(purchaseToken)
   }
 
@@ -68,10 +67,10 @@ export default class FacebookInstantGames {
    * facebook 消单
    * @param purchaseToken
    */
-  consumePurchaseAsync(purchaseToken: string): Promise<Res> {
+  consumePurchaseAsync(purchaseToken: string): Promise<ServerRes> {
     return new Promise((resolve, reject) => {
       FBInstant.payments.consumePurchaseAsync(purchaseToken).then(function () {
-        RG.Mark(DOT.SDK_PURCHASED_DONE)
+        RG.Mark("sdk_purchased_done")
         Ins.showNotice(RG.jssdk.config.i18n.net_error_30200)
         resolve({
           code: 200,
@@ -117,7 +116,7 @@ export default class FacebookInstantGames {
    * @param orderingData
    * @param orderRes
    */
-  purchaseAsync(orderingData, orderRes): Promise<Res> {
+  purchaseAsync(orderingData, orderRes): Promise<ServerRes> {
     return new Promise(resolve => {
       var fbinstantPurchaseAsyncOption = {
         productID: orderingData.selectedProduct.productName,

@@ -1,7 +1,6 @@
 import Http from 'Base/Http';
-import { getUrlParam, signed, formatDate, getAccountType } from './utils';
+import { getUrlParam, signed, formatDate, getAccountType } from './common/utils';
 import * as CryptoJS from 'crypto-js'
-import { DOT } from 'Src/jssdk/Base/Constant';
 import Base from './Base';
 
 export default class Native extends Base {
@@ -291,7 +290,7 @@ export default class Native extends Base {
 
       console.log('initSDKParams', initSDKParam)
 
-      Http.instance.post({
+      Http.ins.post({
         route: '/config/v3.1/initSDK',
         data: initSDKParam
       }).then((data: {
@@ -376,12 +375,13 @@ export default class Native extends Base {
     // 打点判断游戏方是否打点，如果打点就不打这个点
     // let result = JSON.parse(params)
     if (RG.jssdk.config.isPurchasedMark && result.code === 200) {
-      RG.Mark(DOT.SDK_PURCHASED_DONE, {
+      RG.Mark("sdk_purchased_done", {
         userId: RG.jssdk.CurUserInfo().userId,
         money: result.money,
         currency: result.currency,
       });
     }
+    // window.RG.jssdk.App.hidePayment();
   }
 
   consumeOrder(params: string) {

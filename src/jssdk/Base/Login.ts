@@ -1,6 +1,5 @@
-import { getUrlParam, signed } from "../utils";
+import { getUrlParam, signed } from "../common/utils";
 import Http from "./Http";
-import { DOT, RouteLogin, RouteRegister, GET } from "./Constant";
 import Account from "./Account";
 
 export default class Login {
@@ -13,8 +12,8 @@ export default class Login {
   }
 
   private route = {
-    register: RouteRegister,
-    login: RouteLogin,
+    register: "/user/v3/register",
+    login: "/user/v3/login",
   }
 
   public platformLogin(loginParam: LoginParam): Promise<LoginRes> {
@@ -33,7 +32,7 @@ export default class Login {
     }
     return new Promise(async (resolve, reject) => {
       var data = await this.loginParamHandler(loginParam, isRegister)
-      Http.instance.post({ route, data }).then((res: LoginRes) => {
+      Http.ins.post({ route, data }).then((res: LoginRes) => {
         switch (res.code) {
           case 200:
             RG.jssdk.Account.user = Object.assign(res.data, {
@@ -41,7 +40,7 @@ export default class Login {
               token: res.token
             })
             if (res.data.firstLogin) {
-              RG.Mark(DOT.SDK_REGISTER)
+              RG.Mark("sdk_register")
             }
             resolve(res)
             break;
@@ -78,7 +77,7 @@ export default class Login {
       ])
       loginParam.source = deviceMsg.source;
       if (RG.jssdk.config.type === 1 && isRegister) {
-        loginParam.thirdPartyId = getUrlParam(GET.ADVERTISE_Id) ? getUrlParam(GET.ADVERTISE_Id) : '';
+        loginParam.thirdPartyId = getUrlParam("advertiseId") ? getUrlParam("advertiseId") : '';
       }
       resolve(Object.assign(
         deviceMsg,
@@ -142,12 +141,12 @@ export default class Login {
         FB.getLoginStatus(_res => {
           let response = _res.authResponse
           if (response && response.userID) {
-            // var userID = response.authResponse.userID
-            // FB.api('/me?fields=email', (response) => { // name,birthday,gender
-            //   response.userID = userID
-            //   this.reqRegister(params, { response, resolve, reject })
-            // })
-            this.reqRegister(params, { response, resolve, reject })
+            var userID = response.userID
+            FB.api('/me?fields=public_profile,email', (response) => { // name,birthday,gender
+              response.userID = userID
+              this.reqRegister(params, { response, resolve, reject })
+            })
+            // this.reqRegister(params, { response, resolve, reject })
           } else {
             if (RG.jssdk.config.type === 2) {
               let index = location.href.indexOf('&code=')
@@ -166,7 +165,7 @@ export default class Login {
                   console.error(_res.status)
                 }
               }, {
-                  scope: 'email' // ,user_birthday,user_gender
+                  scope: 'public_profile,email' // ,user_birthday,user_gender
                 })
             }
           }
@@ -201,7 +200,7 @@ export default class Login {
 // }
 // // 注册的参数
 // type RegisterParams = LoginParam & RegisterRemainingParams;
-// interface LoginAndRegisterRes extends Res {
+// interface LoginAndRegisterRes extends ServerRes {
 //   data: {
 //     // 用户id
 //     userId: number;
